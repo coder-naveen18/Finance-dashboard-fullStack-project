@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cards - FinDash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        .credit-card {
+            background: linear-gradient(45deg, #4f46e5, #7c3aed);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            position: relative; /* Added for positioning the delete button */
+        }
+        .credit-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 flex-shrink-0 bg-white shadow-lg hidden md:block">
+            <div class="p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 text-white p-2 rounded-lg"><i data-lucide="wallet"></i></div>
+                    <span class="text-2xl font-bold text-gray-800">FinDash</span>
+                </div>
+            </div>
+            <nav class="mt-6">
+                <a href="finance-dashboard-ui.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="ml-4">Dashboard</span>
+                </a>
+                <a href="transactions.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5"></i><span class="ml-4">Transactions</span>
+                </a>
+                <a href="cards.html" class="flex items-center px-6 py-3 text-indigo-600 bg-indigo-50">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i><span class="ml-4 font-semibold">Cards</span>
+                </a>
+                <a href="savings.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                    <i data-lucide="piggy-bank" class="w-5 h-5"></i><span class="ml-4">Savings</span>
+                </a>
+                <a href="settings.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                    <i data-lucide="settings" class="w-5 h-5"></i><span class="ml-4">Settings</span>
+                </a>
+            </nav>
+            <div class="absolute bottom-0 w-64 p-6">
+                 <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/667eea/ffffff?text=A" alt="User avatar">
+                    <div class="ml-3">
+                        <p class="text-sm font-semibold text-gray-800">User</p>
+                        <button id="logout-btn" class="text-xs text-indigo-600 hover:underline">Log Out</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">My Cards</h1>
+                    <p class="text-gray-500 mt-1">Manage your saved credit and debit cards.</p>
+                </div>
+                <button id="add-card-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 flex items-center space-x-2">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span>Add New Card</span>
+                </button>
+            </header>
+
+            <div id="cards-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                <p id="loading-cards-msg">Loading your cards...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Card Modal (HTML is unchanged) -->
+    <div id="add-card-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md mx-auto rounded-xl shadow-lg z-50">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Add New Card</h3>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <form id="card-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="card-number" class="block text-sm font-medium text-gray-700">Card Number</label>
+                            <input type="text" id="card-number" name="card_number" required placeholder="•••• •••• •••• ••••" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="card-holder" class="block text-sm font-medium text-gray-700">Card Holder Name</label>
+                            <input type="text" id="card-holder" name="card_holder" required placeholder="John Doe" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="flex space-x-4">
+                            <div class="w-1/2">
+                                <label for="expiry-date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                                <input type="text" id="expiry-date" name="expiry_date" required placeholder="MM/YY" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div class="w-1/2">
+                                <label for="cvv" class="block text-sm font-medium text-gray-700">CVV</label>
+                                <input type="text" id="cvv" name="cvv" required placeholder="•••" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        const addCardBtn = document.getElementById('add-card-btn');
+        const modal = document.getElementById('add-card-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const cardForm = document.getElementById('card-form');
+        const cardsGrid = document.getElementById('cards-grid');
+        const loadingMsg = document.getElementById('loading-cards-msg');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        function showModal() { modal.classList.remove('hidden'); }
+        function hideModal() { modal.classList.add('hidden'); cardForm.reset(); }
+
+        addCardBtn.addEventListener('click', showModal);
+        closeModalBtn.addEventListener('click', hideModal);
+        cancelBtn.addEventListener('click', hideModal);
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = 'login.html';
+        });
+
+        async function fetchAndDisplayCards() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cards`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch cards');
+                const cards = await response.json();
+
+                cardsGrid.innerHTML = '';
+                if (cards.length === 0) {
+                    cardsGrid.innerHTML = '<p>You have no saved cards. Add one to get started!</p>';
+                    return;
+                }
+
+                cards.forEach(card => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'credit-card';
+                    cardElement.innerHTML = `
+                        <button data-card-id="${card.id}" class="delete-card-btn absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>
+                        <div class="flex justify-between items-start">
+                            <span class="font-mono text-lg">${card.type.toUpperCase()}</span>
+                            <i data-lucide="wifi" class="w-6 h-6"></i>
+                        </div>
+                        <div class="font-mono text-xl tracking-widest">
+                            •••• •••• •••• ${card.last4}
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-xs opacity-70">Card Holder</p>
+                                <p class="font-medium">${card.card_holder}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs opacity-70">Expires</p>
+                                <p class="font-medium">${card.expiry_date}</p>
+                            </div>
+                        </div>
+                    `;
+                    cardsGrid.appendChild(cardElement);
+                });
+                lucide.createIcons();
+            } catch (error) {
+                console.error(error);
+                loadingMsg.textContent = 'Could not load your cards.';
+            }
+        }
+
+        cardForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(cardForm);
+            const cardData = {
+                card_number: formData.get('card_number'),
+                card_holder: formData.get('card_holder'),
+                expiry_date: formData.get('expiry_date'),
+                cvv: formData.get('cvv'),
+                type: 'visa'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/cards`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(cardData)
+                });
+                if (!response.ok) throw new Error('Failed to save card');
+                hideModal();
+                fetchAndDisplayCards();
+            } catch (error) {
+                alert(`Could not save card: ${error.message}`);
+            }
+        });
+
+        // NEW: Event listener for deleting cards
+        cardsGrid.addEventListener('click', async (e) => {
+            const deleteButton = e.target.closest('.delete-card-btn');
+            if (deleteButton) {
+                const cardId = deleteButton.dataset.cardId;
+                // A simple confirmation dialog
+                if (confirm('Are you sure you want to delete this card?')) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/cards/${cardId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        if (!response.ok) throw new Error('Failed to delete card');
+                        fetchAndDisplayCards(); // Refresh the list
+                    } catch (error) {
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            fetchAndDisplayCards();
+        });
+    </script>
+</body>
+</html>
