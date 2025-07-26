@@ -1,10 +1,3 @@
-/*
- * =============================================
- * || EXPRESS.JS BACKEND (COMPLETE WITH AUTH) ||
- * =============================================
- * This is the final, complete server file. It includes user authentication,
- * JWT security, and all API endpoints for the entire application.
- */
 
 const express = require('express');
 const mysql = require('mysql2/promise');
@@ -14,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Changed port to 3001 to avoid conflicts
+const PORT = process.env.PORT || 3000; 
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +22,7 @@ const dbPool = mysql.createPool({
     queueLimit: 0
 });
 
-// --- AUTHENTICATION ROUTES (NEW) ---
+// --- AUTHENTICATION ROUTES ---
 
 /**
  * @route   POST /api/auth/signup
@@ -104,7 +97,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 
-// --- AUTHENTICATION MIDDLEWARE (NEW) ---
+// --- AUTHENTICATION MIDDLEWARE ---
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
@@ -117,8 +110,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-
-// --- PROTECTED API ROUTES (UPDATED) ---
+// --- PROTECTED API ROUTES  ---
 // All routes that handle user data are now protected by the authenticateToken middleware.
 // The ':userId' URL parameter is removed and replaced with 'req.userId' from the token.
 
@@ -140,7 +132,7 @@ app.get('/api/summary', authenticateToken, async (req, res) => {
     }
 });
 
-// NEW Chart Data Endpoint
+//  Chart Data Endpoint
 app.get('/api/chart-data', authenticateToken, async (req, res) => {
     const userId = req.userId;
     try {
@@ -203,16 +195,7 @@ app.get('/api/chart-data', authenticateToken, async (req, res) => {
     }
 });
 
-
-/*
- * =======================================================
- * || NEW ENDPOINT FOR DELETING CARDS                   ||
- * =======================================================
- */
-
-// Add this new endpoint to your existing server.js file,
-// ideally with the other card-related endpoints.
-
+//  card-related endpoints.
 /**
  * @route   DELETE /api/cards/:cardId
  * @desc    Deletes a specific card for the logged-in user.
@@ -241,8 +224,6 @@ app.delete('/api/cards/:cardId', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Failed to delete card.' });
     }
 });
-
-
 
 // Transactions Endpoints
 app.get('/api/transactions/all', authenticateToken, async (req, res) => {
@@ -273,6 +254,30 @@ app.post('/api/transactions', authenticateToken, async (req, res) => {
         res.status(201).json({ message: 'Transaction added successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Failed to add transaction.' });
+    }
+});
+
+app.delete('/api/transactions/:transactionId', authenticateToken, async (req, res) => {
+    const { transactionId } = req.params;
+    const connection = await dbPool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [transactions] = await connection.query('SELECT amount, type, account_id FROM transactions WHERE id = ? AND user_id = ?', [transactionId, req.userId]);
+        if (transactions.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Transaction not found or you do not have permission.' });
+        }
+        const tx = transactions[0];
+        await connection.query('DELETE FROM transactions WHERE id = ?', [transactionId]);
+        const reversalAmount = tx.type === 'income' ? -tx.amount : +tx.amount;
+        await connection.query('UPDATE accounts SET balance = balance + ? WHERE id = ? AND user_id = ?', [reversalAmount, tx.account_id, req.userId]);
+        await connection.commit();
+        res.json({ message: 'Transaction deleted successfully' });
+    } catch (error) {
+        await connection.rollback();
+        res.status(500).json({ message: 'Failed to delete transaction.' });
+    } finally {
+        connection.release();
     }
 });
 
@@ -317,6 +322,33 @@ app.post('/api/savings', authenticateToken, async (req, res) => {
     }
 });
 
+app.put('/api/savings/:goalId', authenticateToken, async (req, res) => {
+    const { goalId } = req.params;
+    const { name, target_amount, current_amount } = req.body;
+    try {
+        const [result] = await dbPool.query('UPDATE savings_goals SET name = ?, target_amount = ?, current_amount = ? WHERE id = ? AND user_id = ?', [name, target_amount, current_amount, goalId, req.userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Goal not found or you do not have permission to update it.' });
+        }
+        res.json({ message: 'Savings goal updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update savings goal.' });
+    }
+});
+
+app.delete('/api/savings/:goalId', authenticateToken, async (req, res) => {
+    const { goalId } = req.params;
+    try {
+        const [result] = await dbPool.query('DELETE FROM savings_goals WHERE id = ? AND user_id = ?', [goalId, req.userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Goal not found or you do not have permission to delete it.' });
+        }
+        res.json({ message: 'Savings goal deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete savings goal.' });
+    }
+});
+
 // Settings / User Endpoints
 app.get('/api/user', authenticateToken, async (req, res) => {
     try {
@@ -353,15 +385,7 @@ app.put('/api/user/password', authenticateToken, async (req, res) => {
     }
 });
 
-
-/*
- * =======================================================
- * || NEW ENDPOINTS FOR AVATAR & PREFERENCES            ||
- * =======================================================
- */
-
-// Add these new endpoints to your existing server.js file.
-
+// For future updates to handle the avtar and themes
 /**
  * @route   PUT /api/user/avatar
  * @desc    Updates the user's avatar URL.
@@ -401,9 +425,6 @@ app.put('/api/user/preferences', authenticateToken, async (req, res) => {
 });
 
 
-// ALSO, you must update your main GET /api/user endpoint to return these new fields.
-// Replace your old '/api/user' endpoint with this one:
-
 /**
  * @route   GET /api/user
  * @desc    Fetches a user's profile information, including avatar and theme.
@@ -424,10 +445,6 @@ app.get('/api/user', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching user data.' });
     }
 });
-
-
-
-
 
 
 // --- START THE SERVER ---

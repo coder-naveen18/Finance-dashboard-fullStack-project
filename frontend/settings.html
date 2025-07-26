@@ -9,45 +9,50 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="dark-mode.js" defer></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
         .card { @apply bg-white rounded-xl shadow-md p-6; }
+        /* Add dark mode styles if you are using them */
+        html.dark body { background-color: #0f172a; color: #cbd5e1; }
+        html.dark .card { @apply bg-slate-800 border border-slate-700; }
+        html.dark .input-field { @apply bg-slate-700 border-slate-600 text-white placeholder-slate-400; }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <div class="flex h-screen bg-gray-100">
+    <div class="flex h-screen bg-gray-100 dark:bg-slate-900">
         <!-- Sidebar Navigation -->
-        <aside class="w-64 flex-shrink-0 bg-white shadow-lg hidden md:block">
+        <aside class="w-64 flex-shrink-0 bg-white dark:bg-slate-800 shadow-lg hidden md:block">
             <div class="p-6">
                 <div class="flex items-center space-x-3">
                     <div class="bg-indigo-600 text-white p-2 rounded-lg"><i data-lucide="wallet"></i></div>
-                    <span class="text-2xl font-bold text-gray-800">FinDash</span>
+                    <span class="text-2xl font-bold text-gray-800 dark:text-white">FinDash</span>
                 </div>
             </div>
             <nav class="mt-6">
-                <a href="finance-dashboard-ui.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                <a href="finance-dashboard-ui.html" class="flex items-center px-6 py-3 text-gray-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600">
                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span class="ml-4">Dashboard</span>
                 </a>
-                <a href="transactions.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                <a href="transactions.html" class="flex items-center px-6 py-3 text-gray-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600">
                     <i data-lucide="arrow-left-right" class="w-5 h-5"></i><span class="ml-4">Transactions</span>
                 </a>
-                <a href="cards.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                <a href="cards.html" class="flex items-center px-6 py-3 text-gray-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600">
                     <i data-lucide="credit-card" class="w-5 h-5"></i><span class="ml-4">Cards</span>
                 </a>
-                <a href="savings.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-indigo-600">
+                <a href="savings.html" class="flex items-center px-6 py-3 text-gray-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600">
                     <i data-lucide="piggy-bank" class="w-5 h-5"></i><span class="ml-4">Savings</span>
                 </a>
-                <a href="settings.html" class="flex items-center px-6 py-3 text-indigo-600 bg-indigo-50">
+                <a href="settings.html" class="flex items-center px-6 py-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-slate-700">
                     <i data-lucide="settings" class="w-5 h-5"></i><span class="ml-4 font-semibold">Settings</span>
                 </a>
             </nav>
             <div class="absolute bottom-0 w-64 p-6">
-                 <div class="flex items-center p-4 bg-gray-50 rounded-lg">
-                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/667eea/ffffff?text=A" alt="User avatar">
+                 <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <img id="sidebar-avatar" class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/e0e7ff/3730a3?text=A" alt="User avatar">
                     <div class="ml-3">
-                        <p class="text-sm font-semibold text-gray-800">User</p>
-                        <button id="logout-btn" class="text-xs text-indigo-600 hover:underline">Log Out</button>
+                        <p id="user-name-sidebar" class="text-sm font-semibold text-gray-800 dark:text-slate-200">User</p>
+                        <button id="logout-btn" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Log Out</button>
                     </div>
                 </div>
             </div>
@@ -56,21 +61,21 @@
         <!-- Main Content -->
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
             <header class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
-                <p class="text-gray-500 mt-1">Manage your account settings and preferences.</p>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+                <p class="text-gray-500 dark:text-slate-400 mt-1">Manage your account settings and preferences.</p>
             </header>
 
             <div class="space-y-8">
                 <div class="card">
-                    <h2 class="text-xl font-semibold mb-4">Profile Information</h2>
+                    <h2 class="text-xl font-semibold mb-4 dark:text-slate-200">Profile Information</h2>
                     <form id="profile-form" class="space-y-4">
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                            <input type="text" id="name" name="name" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Full Name</label>
+                            <input type="text" id="name" name="name" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 input-field">
                         </div>
                         <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                            <input type="email" id="email" name="email" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Email Address</label>
+                            <input type="email" id="email" name="email" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 input-field">
                         </div>
                         <div class="pt-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save Changes</button>
@@ -79,19 +84,19 @@
                 </div>
 
                 <div class="card">
-                    <h2 class="text-xl font-semibold mb-4">Change Password</h2>
+                    <h2 class="text-xl font-semibold mb-4 dark:text-slate-200">Change Password</h2>
                     <form id="password-form" class="space-y-4">
                         <div>
-                            <label for="current-password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                            <input type="password" id="current-password" name="current_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="current-password" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Current Password</label>
+                            <input type="password" id="current-password" name="current_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 input-field">
                         </div>
                         <div>
-                            <label for="new-password" class="block text-sm font-medium text-gray-700">New Password</label>
-                            <input type="password" id="new-password" name="new_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-slate-300">New Password</label>
+                            <input type="password" id="new-password" name="new_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 input-field">
                         </div>
                          <div>
-                            <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                            <input type="password" id="confirm-password" name="confirm_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="confirm-password" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Confirm New Password</label>
+                            <input type="password" id="confirm-password" name="confirm_password" class="mt-1 block w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 input-field">
                         </div>
                         <div class="pt-2">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update Password</button>
@@ -105,7 +110,7 @@
     <script>
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = 'login.html';
+            window.location.href = './login.html';
         }
 
         const API_BASE_URL = 'http://localhost:3000/api';
@@ -113,13 +118,29 @@
         const profileForm = document.getElementById('profile-form');
         const passwordForm = document.getElementById('password-form');
         const logoutBtn = document.getElementById('logout-btn');
+        // CORRECTED: Get sidebar elements
+        const sidebarAvatar = document.getElementById('sidebar-avatar');
+        const userNameSidebar = document.getElementById('user-name-sidebar');
 
         logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
-            window.location.href = 'login.html';
+            localStorage.clear();
+            window.location.href = './login.html';
         });
 
+
+        async function fetchUserInfo() {
+             try {
+                const response = await fetch(`${API_BASE_URL}/user`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) return;
+                const user = await response.json();
+                const userAvatar = user.avatar_url || `https://placehold.co/100x100/e0e7ff/3730a3?text=${user.name.charAt(0).toUpperCase()}`;
+                sidebarAvatar.src = userAvatar;
+                userNameSidebar.textContent = user.name;
+            } catch (error) {
+                console.error("Could not fetch user info for sidebar", error);
+            }
+        }
+        
         async function fetchUserData() {
             try {
                 const response = await fetch(`${API_BASE_URL}/user`, {
@@ -153,6 +174,7 @@
                 });
                 if (!response.ok) throw new Error('Failed to update profile');
                 alert('Profile updated successfully!');
+                fetchUserInfo(); // Refresh sidebar name
             } catch (error) {
                 alert(`Could not update profile: ${error.message}`);
             }
@@ -197,6 +219,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             fetchUserData();
+            fetchUserInfo();
         });
     </script>
 </body>
