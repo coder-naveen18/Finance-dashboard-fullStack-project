@@ -111,7 +111,7 @@ All data-related endpoints are protected and require a valid JWT in the `Authori
 | `/api/user`             | `GET`    | Get user profile information.                | Yes       |
 | `/api/user`             | `PUT`    | Update user profile information.             | Yes       |
 | `/api/user/password`    | `PUT`    | Update user password.                        | Yes       |
-| `/api/user/avatar`      | `PUT`    | Update user avatar URL.                      | Yes       |
-| `/api/user/preferences` | `PUT`    | Update user preferences (theme, etc.).       | Yes       |
+| `/api/user/avatar`      | `PUT`    | Update user avatar URL.                      | No        |
+| `/api/user/preferences` | `PUT`    | Update user preferences (theme, etc.).       | No        |
 
 
