@@ -133,6 +133,7 @@ app.get('/api/summary', authenticateToken, async (req, res) => {
 });
 
 //  Chart Data Endpoint
+// Chart Data Endpoint
 app.get('/api/chart-data', authenticateToken, async (req, res) => {
     const userId = req.userId;
     try {
@@ -153,19 +154,26 @@ app.get('/api/chart-data', authenticateToken, async (req, res) => {
         `;
         const [rows] = await dbPool.query(query, [userId]);
 
-        // Process data for the chart
         const labels = [];
         const monthMap = new Map();
 
         // Initialize map for the last 12 months to ensure all months are present
         for (let i = 11; i >= 0; i--) {
             const d = new Date();
+            // ✅ FIX: Set the day to the 1st BEFORE changing the month.
+            // This prevents the "roll-over" bug when the current day is 31.
+            d.setDate(1); 
             d.setMonth(d.getMonth() - i);
+
             const year = d.getFullYear();
-            const month = d.getMonth() + 1;
+            const month = d.getMonth() + 1; // getMonth() is 0-indexed
             const key = `${year}-${String(month).padStart(2, '0')}`;
             const monthName = d.toLocaleString('default', { month: 'short' });
-            labels.push(monthName);
+            
+            // This check prevents duplicate labels if the loop logic were to create them
+            if (!labels.includes(monthName)) {
+                labels.push(monthName);
+            }
             monthMap.set(key, { income: 0, expense: 0 });
         }
 
@@ -180,14 +188,27 @@ app.get('/api/chart-data', authenticateToken, async (req, res) => {
             }
         });
         
+        // This part of your code had a subtle bug. 
+        // Rebuilding the data arrays from the final, sorted map ensures the data matches the labels.
         const incomeData = [];
         const expenseData = [];
-        for (const value of monthMap.values()) {
-            incomeData.push(value.income);
-            expenseData.push(value.expense);
-        }
 
-        res.json({ labels, incomeData, expenseData });
+        // We re-create the labels and data arrays from the sorted map to ensure they align perfectly.
+        const sortedLabels = [];
+        const sortedKeys = Array.from(monthMap.keys()).sort();
+
+        sortedKeys.forEach(key => {
+            const [year, monthNum] = key.split('-');
+            // Create a date object to get the correct month name for the label
+            const labelDate = new Date(year, monthNum - 1, 1);
+            sortedLabels.push(labelDate.toLocaleString('default', { month: 'short' }));
+            
+            const data = monthMap.get(key);
+            incomeData.push(data.income);
+            expenseData.push(data.expense);
+        });
+
+        res.json({ labels: sortedLabels, incomeData, expenseData });
 
     } catch (error) {
         console.error('Error fetching chart data:', error);
